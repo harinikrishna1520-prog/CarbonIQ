@@ -239,13 +239,31 @@ function App() {
               <div className="metric-top"><span className="metric-label">VS. NATIONAL AVERAGE</span><span className="metric-icon compare-icon">⌁</span></div>
               <div className="metric-value">{averageDifference}<span className="value-unit">%</span><span className="value-context"> {total <= nationalAverage ? 'lower' : 'higher'}</span></div>
               <div className="metric-foot"><span>Compared with an estimated {nationalAverage} kg / month</span></div>
-              <div className="progress-track"><div style={{ width: `${Math.min(total / nationalAverage * 100, 100)}%` }} /></div>
+              <div
+                className="progress-track"
+                role="progressbar"
+                aria-label="Monthly footprint compared with estimated national average"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow={Math.round(Math.min(total / nationalAverage * 100, 100))}
+              >
+                <div style={{ width: `${Math.min(total / nationalAverage * 100, 100)}%` }} />
+              </div>
             </article>
             <article className="metric-card">
               <div className="metric-top"><span className="metric-label">YOUR MONTHLY GOAL</span><span className="metric-icon goal-icon">◎</span></div>
               <div className="metric-value goal-value"><input aria-label="Monthly carbon goal in kilograms CO2 equivalent" className="goal-input" type="number" min="1" step="25" value={monthlyGoal} onChange={(event) => updateMonthlyGoal(event.target.value)} /><span>kg CO₂e</span></div>
               <div className="metric-foot"><span className="goal-status">{total <= monthlyGoal ? 'Within your goal' : `${formatNumber(total - monthlyGoal)} kg over goal`}</span><span>·</span><span> {goalProgress}% of goal</span></div>
-              <div className="progress-track goal-track"><div style={{ width: `${goalProgress}%` }} /></div>
+              <div
+                className="progress-track goal-track"
+                role="progressbar"
+                aria-label="Monthly carbon goal progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow={goalProgress}
+              >
+                <div style={{ width: `${goalProgress}%` }} />
+              </div>
             </article>
           </section>
 
@@ -255,7 +273,10 @@ function App() {
                 <div><div className="eyebrow small-eyebrow">WHERE IT COMES FROM</div><h2>Your emissions breakdown</h2></div>
                 <button className="text-button" type="button" onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}>Edit inputs <span>↗</span></button>
               </div>
-              <div className="breakdown-total"><strong>{isCalculating ? '…' : formatNumber(total)}</strong><span>kg CO₂e this month</span></div>
+              <div className="breakdown-total" role="status" aria-live="polite">
+                <strong>{isCalculating ? '…' : formatNumber(total)}</strong>
+                <span>kg CO₂e this month</span>
+              </div>
               {calculationError && <p className="calculation-error" role="alert">{calculationError}</p>}
               <div className="bar-chart" aria-label="Monthly carbon emissions by category">
                 <div className="chart-y-labels">{chartTicks.map((tick) => <span key={tick}>{formatNumber(tick)}</span>)}</div>
@@ -269,7 +290,13 @@ function App() {
                       { name: 'Flights', value: emissions.flights, color: 'bar-violet' },
                     ].map((item) => (
                       <div className="bar-column" key={item.name}>
-                        <div className={`bar ${item.color}`} style={{ height: `${Math.max(4, Math.min(item.value / chartMax * 100, 100))}%` }} title={`${formatNumber(item.value)} kg CO₂e`} />
+                        <div
+                          className={`bar ${item.color}`}
+                          style={{ height: `${Math.max(4, Math.min(item.value / chartMax * 100, 100))}%` }}
+                          role="img"
+                          aria-label={`${item.name}: ${formatNumber(item.value)} kilograms CO₂e`}
+                          title={`${formatNumber(item.value)} kg CO₂e`}
+                        />
                         <span>{item.name}</span>
                       </div>
                     ))}

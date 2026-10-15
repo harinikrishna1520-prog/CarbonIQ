@@ -16,3 +16,4 @@ html { scroll-behavior: smooth; }
 body { min-height: 100vh; margin: 0; }
 button, input { font: inherit; }
 button { cursor: pointer; }
+:focus-visible { outline: 3px solid #397b58; outline-offset: 3px; }

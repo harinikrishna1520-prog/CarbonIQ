@@ -16,7 +16,7 @@ copy .env.example .env
 npm run dev
 ```
 
-The API defaults to `http://localhost:5000`. It provides:
+The API defaults to `http://localhost:5051`, matching the frontend development proxy and avoiding the port used by JeevaPulse. It provides:
 
 - `GET /api/health` — API health check
 - `POST /api/emissions/calculate` — calculates monthly category and total emissions

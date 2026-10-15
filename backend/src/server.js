@@ -5,7 +5,7 @@ const express = require("express");
 dotenv.config();
 
 const app = express();
-const port = Number(process.env.PORT) || 5000;
+const port = Number(process.env.PORT) || 5051;
 const frontendOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 const emissionFactors = {
   electricity: 0.42,

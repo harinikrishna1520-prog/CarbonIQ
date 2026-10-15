@@ -87,9 +87,6 @@ function App() {
     const controller = new AbortController()
 
     async function calculateEmissions() {
-      setIsCalculating(true)
-      setCalculationError('')
-
       try {
         const response = await fetch('/api/emissions/calculate', {
           method: 'POST',
@@ -119,8 +116,16 @@ function App() {
       }
     }
 
-    calculateEmissions()
-    return () => controller.abort()
+    const timeoutId = window.setTimeout(() => {
+      setIsCalculating(true)
+      setCalculationError('')
+      calculateEmissions()
+    }, 250)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      controller.abort()
+    }
   }, [usage])
 
   const total = emissions.monthly

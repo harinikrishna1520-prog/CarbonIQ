@@ -115,6 +115,7 @@ h2 { font-size: 14px; line-height: 1.3; color: #354a3d; margin: 6px 0 0; font-we
 .breakdown-total > strong { font-size: 23px; color: #2f473a; letter-spacing: -.7px; }
 .breakdown-total > span:nth-child(2) { color: #9aa49d; font-size: 9px; }
 .breakdown-change { margin-left: auto; color: #5b9b71; font-size: 9px; font-weight: 700; }
+.calculation-error { color: #a34336; font-size: 9px; margin-top: 5px; }
 .breakdown-change small { color: #a0aaa2; font-weight: 400; }
 .bar-chart { display: flex; gap: 10px; height: 139px; margin-top: 8px; }
 .chart-y-labels { display: flex; flex-direction: column; justify-content: space-between; color: #a3aca5; font-size: 8px; padding: 0 0 19px; }

@@ -1,12 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
-
-const factors = {
-  electricity: 0.42,
-  gas: 5.3,
-  car: 0.21,
-  flights: 90,
-}
 
 const initialUsage = {
   electricity: 260,
@@ -27,20 +20,50 @@ const formatNumber = (value) => new Intl.NumberFormat('en-US', { maximumFraction
 function App() {
   const [usage, setUsage] = useState(initialUsage)
   const [saved, setSaved] = useState(false)
+  const [emissions, setEmissions] = useState({
+    monthly: 0,
+    electricity: 0,
+    gas: 0,
+    car: 0,
+    flights: 0,
+  })
+  const [calculationError, setCalculationError] = useState('')
+  const [isCalculating, setIsCalculating] = useState(true)
 
-  const emissions = useMemo(() => {
-    const monthly = usage.electricity * factors.electricity
-      + usage.gas * factors.gas
-      + usage.car * factors.car
-      + usage.flights * factors.flights / 12
+  useEffect(() => {
+    const controller = new AbortController()
 
-    return {
-      monthly,
-      electricity: usage.electricity * factors.electricity,
-      gas: usage.gas * factors.gas,
-      car: usage.car * factors.car,
-      flights: usage.flights * factors.flights / 12,
+    async function calculateEmissions() {
+      setIsCalculating(true)
+      setCalculationError('')
+
+      try {
+        const response = await fetch('/api/emissions/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(usage),
+          signal: controller.signal,
+        })
+        const result = await response.json()
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Could not calculate your emissions.')
+        }
+
+        setEmissions(result.data)
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setCalculationError(error.message || 'Could not reach the emissions service.')
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsCalculating(false)
+        }
+      }
     }
+
+    calculateEmissions()
+    return () => controller.abort()
   }, [usage])
 
   const total = emissions.monthly
@@ -122,7 +145,8 @@ function App() {
                 <div><div className="eyebrow small-eyebrow">WHERE IT COMES FROM</div><h2>Your emissions breakdown</h2></div>
                 <button className="text-button" type="button" onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}>Edit inputs <span>↗</span></button>
               </div>
-              <div className="breakdown-total"><strong>{formatNumber(total)}</strong><span>kg CO₂e this month</span><span className="breakdown-change">↓ 12% <small>vs last month</small></span></div>
+              <div className="breakdown-total"><strong>{isCalculating ? '…' : formatNumber(total)}</strong><span>kg CO₂e this month</span><span className="breakdown-change">↓ 12% <small>vs last month</small></span></div>
+              {calculationError && <p className="calculation-error" role="alert">{calculationError}</p>}
               <div className="bar-chart" aria-label="Monthly carbon emissions by category">
                 <div className="chart-y-labels"><span>600</span><span>400</span><span>200</span><span>0</span></div>
                 <div className="chart-area">

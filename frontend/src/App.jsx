@@ -115,6 +115,15 @@ function App() {
   const share = (amount) => total === 0 ? 0 : Math.round((amount / total) * 100)
   const averageDifference = Math.round(Math.abs((total - nationalAverage) / nationalAverage) * 100)
   const goalProgress = Math.min(Math.round((total / monthlyGoal) * 100), 100)
+  const maxCategoryEmission = Math.max(
+    emissions.electricity,
+    emissions.gas,
+    emissions.car,
+    emissions.flights,
+  )
+  const chartStep = Math.max(200, Math.ceil(maxCategoryEmission / 3 / 100) * 100)
+  const chartMax = chartStep * 3
+  const chartTicks = [chartMax, chartStep * 2, chartStep, 0]
 
   function updateUsage(key, value) {
     setUsage((current) => ({ ...current, [key]: Math.max(0, Number(value) || 0) }))
@@ -239,7 +248,7 @@ function App() {
               <div className="breakdown-total"><strong>{isCalculating ? '…' : formatNumber(total)}</strong><span>kg CO₂e this month</span></div>
               {calculationError && <p className="calculation-error" role="alert">{calculationError}</p>}
               <div className="bar-chart" aria-label="Monthly carbon emissions by category">
-                <div className="chart-y-labels"><span>600</span><span>400</span><span>200</span><span>0</span></div>
+                <div className="chart-y-labels">{chartTicks.map((tick) => <span key={tick}>{formatNumber(tick)}</span>)}</div>
                 <div className="chart-area">
                   <div className="chart-gridline one" /><div className="chart-gridline two" /><div className="chart-gridline three" /><div className="chart-gridline four" />
                   <div className="bars">
@@ -250,7 +259,7 @@ function App() {
                       { name: 'Flights', value: emissions.flights, color: 'bar-violet' },
                     ].map((item) => (
                       <div className="bar-column" key={item.name}>
-                        <div className={`bar ${item.color}`} style={{ height: `${Math.max(4, Math.min(item.value / 600 * 100, 100))}%` }} title={`${formatNumber(item.value)} kg CO₂e`} />
+                        <div className={`bar ${item.color}`} style={{ height: `${Math.max(4, Math.min(item.value / chartMax * 100, 100))}%` }} title={`${formatNumber(item.value)} kg CO₂e`} />
                         <span>{item.name}</span>
                       </div>
                     ))}

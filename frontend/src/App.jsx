@@ -56,6 +56,13 @@ const categories = [
   { key: 'flights', label: 'Flights', unit: 'short-haul return trips / year', icon: '✈', color: 'violet' },
 ]
 
+const tipsByCategory = {
+  electricity: 'Check whether your electricity provider offers a renewable energy plan.',
+  gas: 'Review your heating schedule and thermostat settings to spot opportunities to use less energy.',
+  car: 'Combine nearby errands or replace a short car trip with walking, cycling, or transit.',
+  flights: 'For your next trip, compare rail alternatives or consider whether a remote meeting works.',
+}
+
 const formatNumber = (value) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)
 const escapeCsv = (value) => `"${String(value).replaceAll('"', '""')}"`
 
@@ -120,6 +127,9 @@ function App() {
     emissions.gas,
     emissions.car,
     emissions.flights,
+  )
+  const leadingCategory = categories.reduce((leading, category) =>
+    emissions[category.key] > emissions[leading.key] ? category : leading,
   )
   const chartStep = Math.max(200, Math.ceil(maxCategoryEmission / 3 / 100) * 100)
   const chartMax = chartStep * 3
@@ -277,11 +287,14 @@ function App() {
 
             <article className="panel insight-panel">
               <div className="insight-heading"><span className="sparkle-icon">✳</span><span className="eyebrow small-eyebrow">A LITTLE INSIGHT</span><span className="new-label">NEW</span></div>
-              <h2>Your biggest opportunity<br />is closer than you think.</h2>
-              <p className="insight-copy">Your home energy use makes up <strong>{share(emissions.electricity + emissions.gas)}%</strong> of your footprint. A few small changes here could make a meaningful difference.</p>
+              <h2>Start with {leadingCategory.label.toLowerCase()}.</h2>
+              <p className="insight-copy">{total === 0
+                ? 'Enter your monthly activity to see which category contributes most to your estimated footprint.'
+                : <>{leadingCategory.label} is your largest category at <strong>{share(emissions[leadingCategory.key])}%</strong> of your estimated footprint. That makes it a practical place to focus.</>
+              }</p>
               <div className="insight-divider" />
-              <div className="tip-row"><span className="tip-icon">✧</span><p><strong>Try this:</strong> Lowering your thermostat by just 1°C can reduce heating emissions by around 7%.</p></div>
-              <a className="insight-link" href="#calculator">See all your insights <span>→</span></a>
+              <div className="tip-row"><span className="tip-icon">✧</span><p><strong>Try this:</strong> {tipsByCategory[leadingCategory.key]}</p></div>
+              <a className="insight-link" href="#calculator">Adjust your activity <span>→</span></a>
               <div className="insight-decoration">✳</div>
             </article>
           </section>

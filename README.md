@@ -23,6 +23,12 @@ The API defaults to `http://localhost:5051`, matching the frontend development p
 
 The calculation endpoint accepts non-negative numeric `electricity`, `gas`, `car`, and `flights` values in the JSON body.
 
+Run the backend API tests with:
+
+```sh
+npm test
+```
+
 ## Run the frontend
 
 In another terminal:

@@ -54,6 +54,10 @@ app.post("/api/emissions/calculate", (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`CarbonIQ API listening on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`CarbonIQ API listening on port ${port}`);
+  });
+}
+
+module.exports = app;

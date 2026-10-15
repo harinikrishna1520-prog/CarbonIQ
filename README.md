@@ -33,4 +33,4 @@ npm install
 npm run dev
 ```
 
-The frontend is served at `http://localhost:5173`. In development, Vite proxies `/api` requests to the backend at `http://localhost:5051`. The dashboard requests emissions calculations from the backend as activity estimates change. Saved activity estimates are stored in the current browser's local storage; they are not uploaded to the backend. The estimates use simplified average emissions factors and are for personal awareness, not formal reporting.
+The frontend is served at `http://localhost:5173`. In development, Vite proxies `/api` requests to the backend at `http://localhost:5051`. The dashboard requests emissions calculations from the backend as activity estimates change. Saved activity estimates are stored in the current browser's local storage; they are not uploaded to the backend. The dashboard can export current activity estimates and calculated emissions as CSV. The estimates use simplified average emissions factors and are for personal awareness, not formal reporting.

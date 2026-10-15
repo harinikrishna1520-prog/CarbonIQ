@@ -153,6 +153,10 @@ h2 { font-size: 14px; line-height: 1.3; color: #354a3d; margin: 6px 0 0; font-we
 .calculator-panel { margin-top: 14px; padding-bottom: 15px; }
 .calculator-heading { align-items: center; }
 .calculator-heading p { font-size: 9px; color: #98a29b; margin-top: 5px; }
+.calculator-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+.export-button { background: #fff; color: #4f755d; border: 1px solid #dfe8df; border-radius: 6px; padding: 8px 10px; font-size: 9px; font-weight: 650; transition: background .2s, border-color .2s, transform .2s; }
+.export-button:hover:not(:disabled) { background: #f4f8f3; border-color: #b8d1bc; transform: translateY(-1px); }
+.export-button:disabled { cursor: wait; opacity: .55; }
 .save-button { background: #225c43; color: #fff; border: 1px solid #225c43; border-radius: 6px; padding: 8px 12px; font-size: 9px; font-weight: 650; transition: background .2s; }
 .save-button:hover, .save-button.saved { background: #347451; }
 .input-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-top: 17px; }
@@ -181,7 +185,7 @@ h2 { font-size: 14px; line-height: 1.3; color: #354a3d; margin: 6px 0 0; font-we
 .metric-card, .panel { transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
 .metric-card:hover, .panel:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(37, 66, 48, .07); border-color: #dce7dc; }
 .primary-metric:hover { border-color: #357557; box-shadow: 0 12px 28px rgba(31, 92, 66, .16); }
-.nav-item, .icon-button, .period-control, .save-button { transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+.nav-item, .icon-button, .period-control, .save-button, .export-button { transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
 .icon-button:hover, .save-button:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(35, 75, 51, .12); }
 .live-dot { animation: soft-pulse 2.4s ease-in-out infinite; }
 .sparkle-icon { transform-origin: center; animation: sparkle-turn 8s linear infinite; }

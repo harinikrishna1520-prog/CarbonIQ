@@ -45,6 +45,7 @@ const categories = [
 ]
 
 const formatNumber = (value) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)
+const escapeCsv = (value) => `"${String(value).replaceAll('"', '""')}"`
 
 function App() {
   const [storedPreferences] = useState(loadSavedUsage)
@@ -117,6 +118,30 @@ function App() {
       setSaved(false)
       setSaveError(error.message || 'Could not save estimates in this browser.')
     }
+  }
+
+  function exportReport() {
+    const rows = [
+      ['Category', 'Activity', 'Unit', 'Monthly emissions (kg CO2e)'],
+      ...categories.map((category) => [
+        category.label,
+        usage[category.key],
+        category.unit,
+        emissions[category.key].toFixed(2),
+      ]),
+      ['Total', '', '', emissions.monthly.toFixed(2)],
+      ['Estimate note', 'Simplified average emissions factors; for personal awareness, not formal reporting.', '', ''],
+    ]
+    const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\r\n')
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `carboniq-footprint-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (
@@ -234,7 +259,10 @@ function App() {
           <section className="panel calculator-panel" id="calculator">
             <div className="panel-heading calculator-heading">
               <div><div className="eyebrow small-eyebrow">MAKE IT PERSONAL</div><h2>Your monthly activity</h2><p>Adjust your estimates to see how your footprint changes.</p></div>
-              <button className={`save-button ${saved ? 'saved' : ''}`} type="button" onClick={saveUsage}>{saved ? '✓ Saved' : 'Save estimates'}</button>
+              <div className="calculator-actions">
+                <button className="export-button" type="button" onClick={exportReport} disabled={isCalculating || Boolean(calculationError)} aria-label="Export footprint as CSV">↓ <span>Export CSV</span></button>
+                <button className={`save-button ${saved ? 'saved' : ''}`} type="button" onClick={saveUsage}>{saved ? '✓ Saved' : 'Save estimates'}</button>
+              </div>
             </div>
             {saveError && <p className="calculation-error" role="alert">{saveError}</p>}
             <div className="input-grid">

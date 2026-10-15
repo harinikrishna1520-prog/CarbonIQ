@@ -43,7 +43,23 @@ app.post("/api/emissions/calculate", (req, res) => {
     car: car * emissionFactors.car,
     flights: flights * emissionFactors.flights / 12,
   };
+
+  for (const [category, value] of Object.entries(emissions)) {
+    if (!Number.isFinite(value)) {
+      return res.status(400).json({
+        success: false,
+        message: `${category} is too large to calculate safely`,
+      });
+    }
+  }
+
   const monthly = Object.values(emissions).reduce((sum, value) => sum + value, 0);
+  if (!Number.isFinite(monthly)) {
+    return res.status(400).json({
+      success: false,
+      message: "Activity values are too large to calculate a monthly total safely",
+    });
+  }
 
   return res.status(200).json({
     success: true,

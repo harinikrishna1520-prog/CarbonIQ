@@ -67,3 +67,21 @@ test("emissions endpoint rejects missing, negative, and non-numeric activity", a
     });
   }
 });
+
+test("emissions endpoint rejects finite inputs that overflow during calculation", async () => {
+  const response = await fetch(`${baseUrl}/api/emissions/calculate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      electricity: 1,
+      gas: 1,
+      car: 1,
+      flights: Number.MAX_VALUE,
+    }),
+  });
+  const result = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(result.success, false);
+  assert.equal(result.message, "flights is too large to calculate safely");
+});

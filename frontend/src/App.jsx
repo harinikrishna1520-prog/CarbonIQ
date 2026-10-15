@@ -7,6 +7,33 @@ const initialUsage = {
   car: 520,
   flights: 1,
 }
+const usageStorageKey = 'carboniq.activity-estimates.v1'
+
+function loadSavedUsage() {
+  try {
+    const storedUsage = window.localStorage.getItem(usageStorageKey)
+    if (!storedUsage) return { usage: initialUsage, saved: false, error: '' }
+
+    const parsedUsage = JSON.parse(storedUsage)
+    const isValidUsage = Object.keys(initialUsage).every((key) =>
+      typeof parsedUsage[key] === 'number'
+      && Number.isFinite(parsedUsage[key])
+      && parsedUsage[key] >= 0,
+    )
+
+    if (!isValidUsage) {
+      throw new Error('Saved estimates are invalid. Update your activity and save again.')
+    }
+
+    return { usage: parsedUsage, saved: true, error: '' }
+  } catch (error) {
+    return {
+      usage: initialUsage,
+      saved: false,
+      error: error.message || 'Could not load saved estimates from this browser.',
+    }
+  }
+}
 
 const categories = [
   { key: 'electricity', label: 'Electricity', unit: 'kWh / month', icon: '↯', color: 'mint' },
@@ -18,8 +45,10 @@ const categories = [
 const formatNumber = (value) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)
 
 function App() {
-  const [usage, setUsage] = useState(initialUsage)
-  const [saved, setSaved] = useState(false)
+  const [storedPreferences] = useState(loadSavedUsage)
+  const [usage, setUsage] = useState(storedPreferences.usage)
+  const [saved, setSaved] = useState(storedPreferences.saved)
+  const [saveError, setSaveError] = useState(storedPreferences.error)
   const [emissions, setEmissions] = useState({
     monthly: 0,
     electricity: 0,
@@ -72,6 +101,18 @@ function App() {
   function updateUsage(key, value) {
     setUsage((current) => ({ ...current, [key]: Math.max(0, Number(value) || 0) }))
     setSaved(false)
+    setSaveError('')
+  }
+
+  function saveUsage() {
+    try {
+      window.localStorage.setItem(usageStorageKey, JSON.stringify(usage))
+      setSaved(true)
+      setSaveError('')
+    } catch (error) {
+      setSaved(false)
+      setSaveError(error.message || 'Could not save estimates in this browser.')
+    }
   }
 
   return (
@@ -189,8 +230,9 @@ function App() {
           <section className="panel calculator-panel" id="calculator">
             <div className="panel-heading calculator-heading">
               <div><div className="eyebrow small-eyebrow">MAKE IT PERSONAL</div><h2>Your monthly activity</h2><p>Adjust your estimates to see how your footprint changes.</p></div>
-              <button className={`save-button ${saved ? 'saved' : ''}`} type="button" onClick={() => setSaved(true)}>{saved ? '✓ Saved' : 'Save estimates'}</button>
+              <button className={`save-button ${saved ? 'saved' : ''}`} type="button" onClick={saveUsage}>{saved ? '✓ Saved' : 'Save estimates'}</button>
             </div>
+            {saveError && <p className="calculation-error" role="alert">{saveError}</p>}
             <div className="input-grid">
               {categories.map((category) => (
                 <label className="activity-input" key={category.key}>
@@ -202,7 +244,7 @@ function App() {
             </div>
             <p className="estimate-note">Estimates use simplified average emissions factors and are intended for personal awareness, not formal reporting.</p>
           </section>
-          <footer className="page-footer"><span>CarbonIQ <span className="footer-dot">·</span> Clarity for a changing climate</span><span>Data is private to your workspace</span></footer>
+          <footer className="page-footer"><span>CarbonIQ <span className="footer-dot">·</span> Clarity for a changing climate</span><span>Estimates are stored only in this browser</span></footer>
         </div>
       </main>
     </div>

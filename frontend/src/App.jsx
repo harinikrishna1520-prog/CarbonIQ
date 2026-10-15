@@ -81,6 +81,7 @@ function App() {
   })
   const [calculationError, setCalculationError] = useState('')
   const [isCalculating, setIsCalculating] = useState(true)
+  const [apiStatus, setApiStatus] = useState('checking')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -96,6 +97,7 @@ function App() {
           body: JSON.stringify(usage),
           signal: controller.signal,
         })
+        setApiStatus('connected')
         const result = await response.json()
 
         if (!response.ok || !result.success) {
@@ -105,6 +107,9 @@ function App() {
         setEmissions(result.data)
       } catch (error) {
         if (error.name !== 'AbortError') {
+          if (error instanceof TypeError) {
+            setApiStatus('unavailable')
+          }
           setCalculationError(error.message || 'Could not reach the emissions service.')
         }
       } finally {
@@ -215,7 +220,12 @@ function App() {
       <main className="main-content" id="overview">
         <header className="topbar">
           <div className="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div>
-          <div className="topbar-right"><span className="live-dot" /> Personal dashboard <span className="topbar-divider" /> <button className="icon-button" aria-label="Notifications" type="button">♧</button></div>
+          <div className="topbar-right">
+            <span className={`live-dot ${apiStatus}`} aria-hidden="true" />
+            <span aria-live="polite">{apiStatus === 'connected' ? 'API connected' : apiStatus === 'unavailable' ? 'API unavailable' : 'Connecting to API'}</span>
+            <span className="topbar-divider" />
+            <button className="icon-button" aria-label="Notifications" type="button">♧</button>
+          </div>
         </header>
 
         <div className="page-content">

@@ -8,29 +8,41 @@ const initialUsage = {
   flights: 1,
 }
 const nationalAverage = 650
-const monthlyGoal = 500
+const initialMonthlyGoal = 500
 const usageStorageKey = 'carboniq.activity-estimates.v1'
+const goalStorageKey = 'carboniq.monthly-goal.v1'
 
 function loadSavedUsage() {
   try {
     const storedUsage = window.localStorage.getItem(usageStorageKey)
-    if (!storedUsage) return { usage: initialUsage, saved: false, error: '' }
+    const storedGoal = window.localStorage.getItem(goalStorageKey)
+    let usage = initialUsage
+    let monthlyGoal = initialMonthlyGoal
 
-    const parsedUsage = JSON.parse(storedUsage)
-    const isValidUsage = Object.keys(initialUsage).every((key) =>
-      typeof parsedUsage[key] === 'number'
-      && Number.isFinite(parsedUsage[key])
-      && parsedUsage[key] >= 0,
-    )
-
-    if (!isValidUsage) {
-      throw new Error('Saved estimates are invalid. Update your activity and save again.')
+    if (storedUsage) {
+      usage = JSON.parse(storedUsage)
+      const isValidUsage = Object.keys(initialUsage).every((key) =>
+        typeof usage[key] === 'number'
+        && Number.isFinite(usage[key])
+        && usage[key] >= 0,
+      )
+      if (!isValidUsage) {
+        throw new Error('Saved estimates are invalid. Update your activity and save again.')
+      }
     }
 
-    return { usage: parsedUsage, saved: true, error: '' }
+    if (storedGoal) {
+      monthlyGoal = Number(storedGoal)
+      if (!Number.isFinite(monthlyGoal) || monthlyGoal <= 0) {
+        throw new Error('Saved monthly goal is invalid. Set a new goal and save again.')
+      }
+    }
+
+    return { usage, monthlyGoal, saved: Boolean(storedUsage || storedGoal), error: '' }
   } catch (error) {
     return {
       usage: initialUsage,
+      monthlyGoal: initialMonthlyGoal,
       saved: false,
       error: error.message || 'Could not load saved estimates from this browser.',
     }
@@ -50,6 +62,7 @@ const escapeCsv = (value) => `"${String(value).replaceAll('"', '""')}"`
 function App() {
   const [storedPreferences] = useState(loadSavedUsage)
   const [usage, setUsage] = useState(storedPreferences.usage)
+  const [monthlyGoal, setMonthlyGoal] = useState(storedPreferences.monthlyGoal)
   const [saved, setSaved] = useState(storedPreferences.saved)
   const [saveError, setSaveError] = useState(storedPreferences.error)
   const [emissions, setEmissions] = useState({
@@ -109,9 +122,16 @@ function App() {
     setSaveError('')
   }
 
+  function updateMonthlyGoal(value) {
+    setMonthlyGoal(Math.max(1, Number(value) || 1))
+    setSaved(false)
+    setSaveError('')
+  }
+
   function saveUsage() {
     try {
       window.localStorage.setItem(usageStorageKey, JSON.stringify(usage))
+      window.localStorage.setItem(goalStorageKey, String(monthlyGoal))
       setSaved(true)
       setSaveError('')
     } catch (error) {
@@ -130,6 +150,7 @@ function App() {
         emissions[category.key].toFixed(2),
       ]),
       ['Total', '', '', emissions.monthly.toFixed(2)],
+      ['Monthly goal', monthlyGoal, 'kg CO2e', ''],
       ['Estimate note', 'Simplified average emissions factors; for personal awareness, not formal reporting.', '', ''],
     ]
     const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\r\n')
@@ -203,7 +224,7 @@ function App() {
             </article>
             <article className="metric-card">
               <div className="metric-top"><span className="metric-label">YOUR MONTHLY GOAL</span><span className="metric-icon goal-icon">◎</span></div>
-              <div className="metric-value">{formatNumber(monthlyGoal)} <span>kg CO₂e</span></div>
+              <div className="metric-value goal-value"><input aria-label="Monthly carbon goal in kilograms CO2 equivalent" className="goal-input" type="number" min="1" step="25" value={monthlyGoal} onChange={(event) => updateMonthlyGoal(event.target.value)} /><span>kg CO₂e</span></div>
               <div className="metric-foot"><span className="goal-status">{total <= monthlyGoal ? 'Within your goal' : `${formatNumber(total - monthlyGoal)} kg over goal`}</span><span>·</span><span> {goalProgress}% of goal</span></div>
               <div className="progress-track goal-track"><div style={{ width: `${goalProgress}%` }} /></div>
             </article>
@@ -261,7 +282,7 @@ function App() {
               <div><div className="eyebrow small-eyebrow">MAKE IT PERSONAL</div><h2>Your monthly activity</h2><p>Adjust your estimates to see how your footprint changes.</p></div>
               <div className="calculator-actions">
                 <button className="export-button" type="button" onClick={exportReport} disabled={isCalculating || Boolean(calculationError)} aria-label="Export footprint as CSV">↓ <span>Export CSV</span></button>
-                <button className={`save-button ${saved ? 'saved' : ''}`} type="button" onClick={saveUsage}>{saved ? '✓ Saved' : 'Save estimates'}</button>
+                <button className={`save-button ${saved ? 'saved' : ''}`} type="button" onClick={saveUsage}>{saved ? '✓ Saved' : 'Save changes'}</button>
               </div>
             </div>
             {saveError && <p className="calculation-error" role="alert">{saveError}</p>}

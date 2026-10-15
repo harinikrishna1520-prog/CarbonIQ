@@ -88,6 +88,10 @@ h1 span { color: #83a68f; }
 .primary-metric .metric-icon { color: #d0e8d4; background: rgba(255,255,255,.12); }
 .metric-value { color: #31483b; font-size: 28px; letter-spacing: -1px; font-weight: 650; margin: 10px 0 6px; line-height: 1.1; }
 .metric-value > span:first-child { color: #859188; font-size: 11px; font-weight: 500; letter-spacing: 0; }
+.goal-value { display: flex; align-items: baseline; gap: 6px; }
+.goal-input { width: 78px; padding: 0 0 2px; border: 0; border-bottom: 1px dashed #d6dfd7; outline: none; background: transparent; color: #31483b; font: inherit; letter-spacing: inherit; }
+.goal-input:focus { border-bottom-color: #57906b; }
+.goal-input::-webkit-inner-spin-button, .goal-input::-webkit-outer-spin-button { opacity: .45; }
 .primary-metric .metric-value { color: white; font-size: 31px; position: relative; z-index: 1; }
 .primary-metric .metric-value > span:first-child { color: #c7dacb; font-size: 11px; }
 .value-unit { font-size: 19px; letter-spacing: -.4px; }

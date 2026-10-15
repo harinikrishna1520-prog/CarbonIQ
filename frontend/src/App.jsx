@@ -7,6 +7,8 @@ const initialUsage = {
   car: 520,
   flights: 1,
 }
+const nationalAverage = 650
+const monthlyGoal = 500
 const usageStorageKey = 'carboniq.activity-estimates.v1'
 
 function loadSavedUsage() {
@@ -97,6 +99,8 @@ function App() {
 
   const total = emissions.monthly
   const share = (amount) => total === 0 ? 0 : Math.round((amount / total) * 100)
+  const averageDifference = Math.round(Math.abs((total - nationalAverage) / nationalAverage) * 100)
+  const goalProgress = Math.min(Math.round((total / monthlyGoal) * 100), 100)
 
   function updateUsage(key, value) {
     setUsage((current) => ({ ...current, [key]: Math.max(0, Number(value) || 0) }))
@@ -163,20 +167,20 @@ function App() {
             <article className="metric-card primary-metric">
               <div className="metric-top"><span className="metric-label">YOUR MONTHLY FOOTPRINT</span><span className="metric-icon leaf-icon">♧</span></div>
               <div className="metric-value">{formatNumber(total)} <span>kg CO₂e</span></div>
-              <div className="metric-foot"><span className="down-chip">↓ 12%</span><span>vs. last month</span></div>
+              <div className="metric-foot"><span>Based on your entered activity</span></div>
               <div className="metric-decoration"><i /><i /><i /><i /><i /><i /><i /></div>
             </article>
             <article className="metric-card">
               <div className="metric-top"><span className="metric-label">VS. NATIONAL AVERAGE</span><span className="metric-icon compare-icon">⌁</span></div>
-              <div className="metric-value">{Math.max(0, Math.round(100 - total / 650 * 100))}<span className="value-unit">%</span><span className="value-context"> lower</span></div>
-              <div className="metric-foot"><span>Based on an estimated 650 kg / month</span></div>
-              <div className="progress-track"><div style={{ width: `${Math.min(total / 650 * 100, 100)}%` }} /></div>
+              <div className="metric-value">{averageDifference}<span className="value-unit">%</span><span className="value-context"> {total <= nationalAverage ? 'lower' : 'higher'}</span></div>
+              <div className="metric-foot"><span>Compared with an estimated {nationalAverage} kg / month</span></div>
+              <div className="progress-track"><div style={{ width: `${Math.min(total / nationalAverage * 100, 100)}%` }} /></div>
             </article>
             <article className="metric-card">
               <div className="metric-top"><span className="metric-label">YOUR MONTHLY GOAL</span><span className="metric-icon goal-icon">◎</span></div>
-              <div className="metric-value">500 <span>kg CO₂e</span></div>
-              <div className="metric-foot"><span className="goal-status">{total <= 500 ? 'You’re on track' : `${formatNumber(total - 500)} kg to go`}</span><span>·</span><span> 72% there</span></div>
-              <div className="progress-track goal-track"><div style={{ width: `${Math.min(total / 500 * 100, 100)}%` }} /></div>
+              <div className="metric-value">{formatNumber(monthlyGoal)} <span>kg CO₂e</span></div>
+              <div className="metric-foot"><span className="goal-status">{total <= monthlyGoal ? 'Within your goal' : `${formatNumber(total - monthlyGoal)} kg over goal`}</span><span>·</span><span> {goalProgress}% of goal</span></div>
+              <div className="progress-track goal-track"><div style={{ width: `${goalProgress}%` }} /></div>
             </article>
           </section>
 
@@ -186,7 +190,7 @@ function App() {
                 <div><div className="eyebrow small-eyebrow">WHERE IT COMES FROM</div><h2>Your emissions breakdown</h2></div>
                 <button className="text-button" type="button" onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}>Edit inputs <span>↗</span></button>
               </div>
-              <div className="breakdown-total"><strong>{isCalculating ? '…' : formatNumber(total)}</strong><span>kg CO₂e this month</span><span className="breakdown-change">↓ 12% <small>vs last month</small></span></div>
+              <div className="breakdown-total"><strong>{isCalculating ? '…' : formatNumber(total)}</strong><span>kg CO₂e this month</span></div>
               {calculationError && <p className="calculation-error" role="alert">{calculationError}</p>}
               <div className="bar-chart" aria-label="Monthly carbon emissions by category">
                 <div className="chart-y-labels"><span>600</span><span>400</span><span>200</span><span>0</span></div>
